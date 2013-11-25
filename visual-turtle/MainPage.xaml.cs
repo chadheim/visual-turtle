@@ -1,20 +1,13 @@
-﻿using visual_turtle.Common;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
+﻿using System;
+using System.Text;
+using TurtleVM;
+using visual_turtle.Common;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI.Xaml;
+using Windows.UI;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
-using TurtleVM;
-using System.Text;
+using Windows.UI.Xaml.Shapes;
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234237
 
@@ -169,6 +162,34 @@ namespace visual_turtle
             CompileAndRun();
         }
 
+        class Turtle
+        {
+            public Point pos;
+            public Point dir;
+        }
+
+        Turtle turtle;
+
+        private void MoveForward()
+        {
+            Point dst = turtle.pos;
+            dst.X += turtle.dir.X;
+            dst.Y += turtle.dir.Y;
+
+            Line line = new Line()
+            {
+                X1 = turtle.pos.X,
+                Y1 = turtle.pos.X,
+                X2 = dst.X,
+                Y2 = dst.Y,
+                StrokeThickness = 4,
+                Stroke = new SolidColorBrush(Colors.Green)
+            };
+            cvsTurtleActions.Children.Add(line);
+
+            turtle.pos = dst;
+        }
+
         private void CompileAndRun()
         {
             Tokenizer tokenizer = new Tokenizer(TokenTypes.ALL_TYPES, tbSourceCode.Text);
@@ -194,6 +215,7 @@ namespace visual_turtle
 
             tbTokenStream.Text = sbTokens.ToString();
             tbParseTree.Text = sbNodes.ToString();
+
         }
 
         private void ASTNodeToString(StringBuilder sb, AST.Node node, string depth)

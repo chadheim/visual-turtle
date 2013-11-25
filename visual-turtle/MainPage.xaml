@@ -93,7 +93,8 @@
                 </Grid.RowDefinitions>
                 <TextBlock Grid.Row="0" Text="Output"/>
                 <ScrollViewer Grid.Row="1">
-                    <TextBox x:Name="tbTurtleActions" TextWrapping="Wrap" IsReadOnly="True" FontFamily="Courier New"  Background="Black" Foreground="Green" BorderBrush="Black"/>
+                    <Canvas x:Name="cvsTurtleActions" Background="Black" />
+                    <!--<TextBox x:Name="tbTurtleActions" TextWrapping="Wrap" IsReadOnly="True" FontFamily="Courier New"  Background="Black" Foreground="Green" BorderBrush="Black"/>!-->
                 </ScrollViewer>
             </Grid>
         </Grid>
