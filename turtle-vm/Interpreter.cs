@@ -19,6 +19,24 @@ namespace TurtleVM
 
         public float Evaluate(AST.Node node)
         {
+            switch(node.type)
+            {
+                case AST.NodeType.Program:
+                    if (node.children != null)
+                        foreach (AST.Node n in node.children)
+                            Evaluate(n);
+                  break;
+                case AST.NodeType.Block:
+                    if(node.children != null)
+                        foreach (AST.Node n in node.children)
+                            Evaluate(n);
+                  break;
+                case AST.NodeType.Call:
+                    if(symbols.Exists(node.text))
+                        if(symbols[node.text].procedure != null)
+                            symbols[node.text].procedure();
+                  break;
+            }
             return 0;
         }
     }

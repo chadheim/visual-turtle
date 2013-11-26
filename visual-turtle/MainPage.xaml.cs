@@ -162,34 +162,6 @@ namespace visual_turtle
             CompileAndRun();
         }
 
-        class Turtle
-        {
-            public Point pos;
-            public Point dir;
-        }
-
-        Turtle turtle;
-
-        private void MoveForward()
-        {
-            Point dst = turtle.pos;
-            dst.X += turtle.dir.X;
-            dst.Y += turtle.dir.Y;
-
-            Line line = new Line()
-            {
-                X1 = turtle.pos.X,
-                Y1 = turtle.pos.X,
-                X2 = dst.X,
-                Y2 = dst.Y,
-                StrokeThickness = 4,
-                Stroke = new SolidColorBrush(Colors.Green)
-            };
-            cvsTurtleActions.Children.Add(line);
-
-            turtle.pos = dst;
-        }
-
         private void CompileAndRun()
         {
             Tokenizer tokenizer = new Tokenizer(TokenTypes.ALL_TYPES, tbSourceCode.Text);
@@ -201,21 +173,32 @@ namespace visual_turtle
                 sbTokens.AppendLine(token.ToString());
             };
 
+            AST.Node program = null;
             StringBuilder sbNodes = new StringBuilder();
             try
             {
-                AST.Node root = parser.Parse();
-                ASTNodeToString(sbNodes, root, "");
+                program = parser.Parse();
+                ASTNodeToString(sbNodes, program, "");
             }
             catch (Exception ex)
             {
                 sbNodes.AppendLine(ex.ToString());
             }
 
-
             tbTokenStream.Text = sbTokens.ToString();
             tbParseTree.Text = sbNodes.ToString();
 
+            cvsTurtleActions.Children.Clear();
+            Turtle turtle = new Turtle(cvsTurtleActions);
+            if (program != null)
+            {
+                Interpreter interpreter = new Interpreter();
+                interpreter.Symbols.Add("MoveForward", new SymbolValue(() => { turtle.MoveForward(); }));
+                interpreter.Symbols.Add("TurnLeft", new SymbolValue(() => { turtle.TurnLeft(); }));
+                interpreter.Symbols.Add("TurnRight", new SymbolValue(() => { turtle.TurnRight(); }));
+                interpreter.Evaluate(program);
+            }
+            turtle.DrawTurtle();
         }
 
         private void ASTNodeToString(StringBuilder sb, AST.Node node, string depth)
