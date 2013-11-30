@@ -106,5 +106,22 @@ namespace UnitTests
             Assert.IsTrue(interpreter.Symbols.Exists("y"));
         }
 
+        [TestMethod]
+        public void TestInterpretCall()
+        {
+            string input = "VAR x; PROCEDURE foo; x := 1; CALL foo .";
+
+            Interpreter interpreter = new Interpreter();
+            Assert.IsFalse(interpreter.Symbols.Exists("x"));
+            Assert.IsFalse(interpreter.Symbols.Exists("foo"));
+
+            Interpret(interpreter, input);
+
+            Assert.IsTrue(interpreter.Symbols.Exists("x"));
+            Assert.IsTrue(interpreter.Symbols.Exists("foo"));
+
+            Assert.AreEqual(1.0f, interpreter.Symbols["x"].number);
+        }
+
     }
 }

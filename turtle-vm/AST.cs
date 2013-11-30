@@ -8,7 +8,7 @@ namespace TurtleVM
 {
     public class AST
     {
-        public enum NodeType { Program, Block, ConstDecl, VarDecl, ProcDecl, Statement, Assign, Expr, Id, Number, If, While, UniOp, BinOp, Comp, Term, Factor, Call };
+        public enum NodeType { Program, Block, ConstDecl, VarDecl, ProcDecl, Assign, Id, Number, If, While, UniOp, BinOp, Comp, Call };
 
         public class Node
         {
@@ -25,6 +25,9 @@ namespace TurtleVM
             
             public void Add(Node node)
             {
+                if (node == null)
+                    return;
+
                 if (children == null)
                     children = new List<AST.Node>();
 

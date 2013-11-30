@@ -48,7 +48,38 @@ namespace UnitTests
             Assert.AreEqual(AST.NodeType.Block, root.children[0].type);
             Assert.AreEqual(AST.NodeType.ProcDecl, root.children[0].children[0].type);
             Assert.AreEqual("test", root.children[0].children[0].text);
-            Assert.AreEqual(AST.NodeType.Assign, root.children[0].children[0].children[0].type);
+            Assert.AreEqual(AST.NodeType.Block, root.children[0].children[0].children[0].type);
+        }
+
+        [TestMethod]
+        public void TestParseAssign()
+        {
+            AST.Node root = Parse("x := 1 .");
+            Assert.AreEqual(AST.NodeType.Program, root.type);
+            Assert.AreEqual(AST.NodeType.Block, root.children[0].type);
+            Assert.AreEqual(AST.NodeType.Assign, root.children[0].children[0].type);
+            Assert.AreEqual("x", root.children[0].children[0].text);
+            Assert.AreEqual(AST.NodeType.Number, root.children[0].children[0].children[0].type);
+            Assert.AreEqual(1.0f, root.children[0].children[0].children[0].number);
+        }
+
+        [TestMethod]
+        public void TestParseCall()
+        {
+            AST.Node root = Parse("CALL test .");
+            Assert.AreEqual(AST.NodeType.Program, root.type);
+            Assert.AreEqual(AST.NodeType.Block, root.children[0].type);
+            Assert.AreEqual(AST.NodeType.Call, root.children[0].children[0].type);
+            Assert.AreEqual("test", root.children[0].children[0].text);
+        }
+
+        [TestMethod]
+        public void TestParseBeginEnd()
+        {
+            AST.Node root = Parse("BEGIN END .");
+            Assert.AreEqual(AST.NodeType.Program, root.type);
+            Assert.AreEqual(AST.NodeType.Block, root.children[0].type);
+            Assert.AreEqual(AST.NodeType.Block, root.children[0].children[0].type);
         }
 
         [TestMethod]
@@ -58,6 +89,17 @@ namespace UnitTests
             Assert.AreEqual(AST.NodeType.Program, root.type);
             Assert.AreEqual(AST.NodeType.Block, root.children[0].type);
             Assert.AreEqual(AST.NodeType.If, root.children[0].children[0].type);
+            Assert.AreEqual(AST.NodeType.Comp, root.children[0].children[0].children[0].type);
+            Assert.AreEqual(AST.NodeType.Assign, root.children[0].children[0].children[1].type);
+        }
+
+        [TestMethod]
+        public void TestParseWhile()
+        {
+            AST.Node root = Parse("WHILE x<=10 DO y:=1 .");
+            Assert.AreEqual(AST.NodeType.Program, root.type);
+            Assert.AreEqual(AST.NodeType.Block, root.children[0].type);
+            Assert.AreEqual(AST.NodeType.While, root.children[0].children[0].type);
             Assert.AreEqual(AST.NodeType.Comp, root.children[0].children[0].children[0].type);
             Assert.AreEqual(AST.NodeType.Assign, root.children[0].children[0].children[1].type);
         }

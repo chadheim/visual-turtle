@@ -10,7 +10,6 @@ namespace TurtleVM
     public class Parser
     {
         Tokenizer tokenizer;
-        ASTBuilder builder;
 
         public Parser(Tokenizer tokenizer)
         {
@@ -55,26 +54,18 @@ namespace TurtleVM
         public AST.Node Parse()
         {
             tokenizer.Next();
-
-            builder = new ASTBuilder();
-
-            builder.Push(new AST.Node(AST.NodeType.Program));
-            Program();
-            builder.Pop();
-
-            return builder.Build();
+            return Program();
         }
         
         // program = block "."
-        void Program()
+        AST.Node Program()
         {
-            AST.Node n = new AST.Node(AST.NodeType.Block);
-            builder.Add(n);
-            builder.Push(n);
-            Block();
-            builder.Pop();
+            AST.Node prgm = new AST.Node(AST.NodeType.Program);
+            prgm.Add(Block());
 
             Expect(TokenTypes.PERIOD);
+
+            return prgm;
         }
 
         // block =
@@ -82,8 +73,10 @@ namespace TurtleVM
         //     ["var" id {"," id} ";"]
         //     {"procedure" id ";" block ";"} 
         //     statement
-        void Block()
+        AST.Node Block()
         {
+            AST.Node block = new AST.Node(AST.NodeType.Block);
+
             if (Accept(TokenTypes.CONST))
             {
                 do
@@ -96,7 +89,7 @@ namespace TurtleVM
                     AST.Node n = new AST.Node(AST.NodeType.ConstDecl);
                     n.text = id.Text;
                     n.number = float.Parse(number.Text);
-                    builder.Add(n);
+                    block.Add(n);
 
                 } while (Accept(TokenTypes.COMMA));
                 Expect(TokenTypes.SEMI);
@@ -111,7 +104,7 @@ namespace TurtleVM
 
                     AST.Node n = new AST.Node(AST.NodeType.VarDecl);
                     n.text = id.Text;
-                    builder.Add(n);
+                    block.Add(n);
 
                 } while (Accept(TokenTypes.COMMA));
                 Expect(TokenTypes.SEMI);
@@ -125,15 +118,15 @@ namespace TurtleVM
 
                 AST.Node n = new AST.Node(AST.NodeType.ProcDecl);
                 n.text = id.Text;
-                builder.Add(n);
-                builder.Push(n);
-                Block();
-                builder.Pop();
+                n.Add(Block());
+                block.Add(n);
 
                 Expect(TokenTypes.SEMI);
             }
 
-            Statement();
+            block.Add(Statement());
+
+            return block;
         }
 
         // statement =
@@ -142,146 +135,183 @@ namespace TurtleVM
         //     | "begin" statement ";" {statement ";"} "end"
         //     | "if" condition "then" statement
         //     | "while" condition "do" statement
-        void Statement()
+        AST.Node Statement()
         {
+            AST.Node stmt = null;
+
             Token token;
             if(Accept(TokenTypes.ID, out token))
             {
                 Expect(TokenTypes.ASSIGN);
 
-                AST.Node n = new AST.Node(AST.NodeType.Assign);
-                n.text = token.Text;
-                builder.Add(n);
-                builder.Push(n);
-                Expression();
-                builder.Pop();
+                stmt = new AST.Node(AST.NodeType.Assign);
+                stmt.text = token.Text;
+                stmt.Add(Expression());
             }
             else if (Accept(TokenTypes.CALL))
             {
                 Expect(TokenTypes.ID, out token);
 
-                AST.Node n = new AST.Node(AST.NodeType.Call);
-                n.text = token.Text;
-                builder.Add(n);
+                stmt = new AST.Node(AST.NodeType.Call);
+                stmt.text = token.Text;
             }
             else if (Accept(TokenTypes.BEGIN))
             {
+                stmt = new AST.Node(AST.NodeType.Block);
                 do
                 {
-                    Statement();
+                    stmt.Add(Statement());
                 } while (Accept(TokenTypes.SEMI));
                 Expect(TokenTypes.END);
             }
             else if (Accept(TokenTypes.IF))
             {
-                AST.Node n = new AST.Node(AST.NodeType.If);
-                builder.Add(n);
-                builder.Push(n);
-                Condition();
+                stmt = new AST.Node(AST.NodeType.If);
+                stmt.Add(Condition());
                 Expect(TokenTypes.THEN);
-                Statement();
-                builder.Pop();
+                stmt.Add(Statement());
             }
             else if (Accept(TokenTypes.WHILE))
             {
-                AST.Node n = new AST.Node(AST.NodeType.While);
-                builder.Add(n);
-                builder.Push(n);
-                Condition();
+                stmt = new AST.Node(AST.NodeType.While);
+                stmt.Add(Condition());
                 Expect(TokenTypes.DO);
-                Statement();
-                builder.Pop();
+                stmt.Add(Statement());
             }
+
+            return stmt;
         }
 
         // condition =
         //     "odd" expression
         //     | expression ("="|"#"|"<"|"<="|">"|">=") expression
-        void Condition()
+        AST.Node Condition()
         {
+            AST.Node cond = null;
+
             if(Accept(TokenTypes.ODD))
             {
-                AST.Node n = new AST.Node(AST.NodeType.UniOp);
-                n.text = "odd";
-                builder.Add(n);
-                builder.Push(n);
-                Expression();
-                builder.Pop();
+                cond = new AST.Node(AST.NodeType.UniOp);
+                cond.text = "odd";
+                cond.Add(Expression());
             }
             else
             {
-                AST.Node n = new AST.Node(AST.NodeType.Comp);
-                builder.Add(n);
-                builder.Push(n);
-                Expression();
+                cond = new AST.Node(AST.NodeType.Comp);
+                cond.Add(Expression());
+
                 Token comp;
                 Expect(TokenTypes.COMP, out comp);
-                n.text = comp.Text;
-                Expression();
-                builder.Pop();
+                cond.text = comp.Text;
+
+                cond.Add(Expression());
             }
+
+            return cond;
         }
 
         // expression = ["+"|"-"] term {("+"|"-") term}
-        void Expression()
+        AST.Node Expression()
         {
+            AST.Node expr, t0, t1, op0, op1;
+
             Token token;
             Accept(TokenTypes.ADDSUB, out token);
-            
-            AST.Node n = new AST.Node(AST.NodeType.Term);
-            builder.Add(n);
-            builder.Push(n);
 
-            Term();
+            t0 = Term();
+            expr = t0;
+            op0 = null;
+
             while (Accept(TokenTypes.ADDSUB, out token))
             {
-                Term();
+                t1 = Term();
+
+                op1 = new AST.Node(AST.NodeType.BinOp);
+                op1.text = token.Text;
+
+                if (op0 != null)
+                {
+                    t0 = op0.children[1];
+                    op0.children[1] = op1;
+                }
+                else
+                {
+                    expr = op1;
+                }
+                op1.Add(t0);
+                op1.Add(t1);
+
+                op0 = op1;
             }
 
-            builder.Pop();
+            return expr;
         }
 
         // term = factor {("*"|"/") factor}
-        void Term()
+        AST.Node Term()
         {
-            AST.Node n = new AST.Node(AST.NodeType.Factor);
-            builder.Add(n);
-            builder.Push(n);
-            Factor();
+            AST.Node term, f0, f1, op0, op1;
             Token token;
+
+            f0 = Factor();
+            term = f0;
+            op0 = null;
+
             while (Accept(TokenTypes.MULDIV, out token))
-                Factor();
-            builder.Pop();
+            {
+                f1 = Factor();
+
+                op1 = new AST.Node(AST.NodeType.BinOp);
+                op1.text = token.Text;
+
+                if (op0 != null)
+                {
+                    f0 = op0.children[1];
+                    op0.children[1] = op1;
+                }
+                else
+                {
+                    term = op1;
+                }
+                op1.Add(f0);
+                op1.Add(f1);
+
+                op0 = op1;
+            }
+
+            return term;
         }
 
         // factor =
         //     id
         //     | number
         //     | "(" expression ")"
-        void Factor()
+        AST.Node Factor()
         {
+            AST.Node factor = null;
+
             Token token;
             if(Accept(TokenTypes.ID, out token))
             {
-                AST.Node n = new AST.Node(AST.NodeType.Id);
-                n.text = token.Text;
-                builder.Add(n);
+                factor = new AST.Node(AST.NodeType.Id);
+                factor.text = token.Text;
             }
             else if(Accept(TokenTypes.NUMBER, out token))
             {
-                AST.Node n = new AST.Node(AST.NodeType.Number);
-                n.number = float.Parse(token.Text);
-                builder.Add(n);
+                factor = new AST.Node(AST.NodeType.Number);
+                factor.number = float.Parse(token.Text);
             }
             else if(Accept(TokenTypes.LPAREN))
             {
-                AST.Node n = new AST.Node(AST.NodeType.Expr);
-                builder.Add(n);
-                builder.Push(n);
-                Expression();
-                builder.Pop();
+                factor = Expression();
                 Expect(TokenTypes.RPAREN);
             }
+            else
+            {
+                throw new Exception("Expected: id|number|(expr) Actual: " + tokenizer.Current);
+            }
+
+            return factor;
         }
     }
 }
