@@ -46,7 +46,7 @@
                         AutomationProperties.ItemType="Navigation Button" Height="41" Width="41"/>
             <TextBlock x:Name="pageTitle" Text="{StaticResource AppName}" Style="{StaticResource HeaderTextBlockStyle}" Grid.Column="1" 
                         IsHitTestVisible="false" TextWrapping="NoWrap" VerticalAlignment="Bottom" Margin="0,0,30,40" Height="40"/>
-            <Button x:Name="btnRun" Content="Run" Grid.Column="2" HorizontalAlignment="Left" Margin="39,59,0,0" VerticalAlignment="Top" Background="Transparent" Click="btnRun_Click"/>
+            <Button x:Name="btnRun" Content="Run" Grid.Column="2" HorizontalAlignment="Right" Margin="0,0,40,0" VerticalAlignment="Center" Background="Transparent" Click="btnRun_Click"/>
         </Grid>
 
         <Grid Grid.Row="1">
