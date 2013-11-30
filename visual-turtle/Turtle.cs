@@ -16,6 +16,7 @@ namespace visual_turtle
         Canvas canvas;
         Point pos;
         Point dir;
+        bool pen;
 
         public Turtle(Canvas canvas)
         {
@@ -24,6 +25,7 @@ namespace visual_turtle
             pos.Y = 200;
             dir.X = 0;
             dir.Y = -1;
+            pen = true;
         }
 
         private void DrawLine(double x1, double y1, double x2, double y2, Color color)
@@ -59,7 +61,8 @@ namespace visual_turtle
             dst.X += dir.X * 25;
             dst.Y += dir.Y * 25;
 
-            DrawLine(pos.X, pos.Y, dst.X, dst.Y, Colors.Blue);
+            if(pen)
+                DrawLine(pos.X, pos.Y, dst.X, dst.Y, Colors.Blue);
 
             pos = dst;
         }
@@ -86,6 +89,16 @@ namespace visual_turtle
         public void TurnRight()
         {
             Turn(1);
+        }
+
+        public void PenDown()
+        {
+            pen = true;
+        }
+
+        public void PenUp()
+        {
+            pen = false;
         }
     }
 }

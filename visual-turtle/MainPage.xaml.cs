@@ -159,7 +159,7 @@ namespace visual_turtle
 
         private void tbSourceCode_TextChanged(object sender, TextChangedEventArgs e)
         {
-            CompileAndRun();
+            //CompileAndRun();
         }
 
         private void CompileAndRun()
@@ -196,6 +196,8 @@ namespace visual_turtle
                 interpreter.Symbols.Add("MoveForward", new SymbolValue(() => { turtle.MoveForward(); }));
                 interpreter.Symbols.Add("TurnLeft", new SymbolValue(() => { turtle.TurnLeft(); }));
                 interpreter.Symbols.Add("TurnRight", new SymbolValue(() => { turtle.TurnRight(); }));
+                interpreter.Symbols.Add("PenDown", new SymbolValue(() => { turtle.PenDown(); }));
+                interpreter.Symbols.Add("PenUp", new SymbolValue(() => { turtle.PenUp(); }));
                 interpreter.Evaluate(program);
             }
             turtle.DrawTurtle();
@@ -210,6 +212,12 @@ namespace visual_turtle
                     foreach (AST.Node child in node.children)
                         ASTNodeToString(sb, child, depth + "-");
             }
+        }
+
+        private void btnRun_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            CompileAndRun();
+
         }
     }
 }

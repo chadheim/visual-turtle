@@ -1,0 +1,51 @@
+﻿VAR units, x;
+
+PROCEDURE moveUnits;
+ VAR x;
+ BEGIN
+  WHILE x < units DO
+  BEGIN
+   CALL MoveForward;
+   x := x + 1
+  END
+END;
+
+PROCEDURE foo;
+ VAR x;
+ BEGIN
+  WHILE x < 4 DO
+  BEGIN
+   CALL MoveForward;
+   CALL TurnLeft;
+   x := x + 1
+  END
+END;
+
+PROCEDURE bar;
+ VAR x;
+ BEGIN
+  WHILE x < 4 DO
+  BEGIN
+   CALL foo;
+   CALL TurnRight;
+   CALL MoveForward;
+   x := x + 1
+  END
+END;
+
+WHILE x < 4 DO
+BEGIN
+ CALL bar;
+ CALL PenUp;
+ CALL TurnRight;
+ 
+ IF x < 3 THEN
+ BEGIN
+  units := 5;
+  CALL moveUnits;
+ END;
+
+ CALL PenDown;
+ x := x + 1
+END
+.
