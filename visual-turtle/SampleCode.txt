@@ -38,13 +38,8 @@ BEGIN
  CALL bar;
  CALL PenUp;
  CALL TurnRight;
- 
- IF x < 3 THEN
- BEGIN
-  units := 5;
-  CALL moveUnits;
- END;
-
+ units := 5;
+ CALL moveUnits;
  CALL PenDown;
  x := x + 1
 END
