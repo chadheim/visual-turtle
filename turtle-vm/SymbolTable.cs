@@ -9,10 +9,13 @@ namespace TurtleVM
     public class SymbolTable
     {
         Dictionary<string, SymbolValue> symbols;
+        SymbolTable parent;
+        public SymbolTable Parent { get { return parent; } }
 
-        public SymbolTable()
+        public SymbolTable(SymbolTable parent)
         {
             symbols = new Dictionary<string, SymbolValue>();
+            this.parent = parent;
         }
 
         public void Add(string id, SymbolValue value)
@@ -22,13 +25,29 @@ namespace TurtleVM
 
         public SymbolValue this[string id]
         {
-            get { return symbols[id]; }
             set { symbols[id] = value; }
+            get 
+            {
+                if (symbols.ContainsKey(id))
+                    return symbols[id];
+
+                if (parent != null)
+                    return parent[id];
+
+                //throws an exception
+                return symbols[id];
+            }
         }
 
         public bool Exists(string id)
         {
-            return symbols.ContainsKey(id);
+            if (symbols.ContainsKey(id))
+                return true;
+
+            if (parent != null)
+                return parent.Exists(id);
+
+            return false;
         }
     }
 }

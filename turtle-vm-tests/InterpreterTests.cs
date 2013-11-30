@@ -123,5 +123,69 @@ namespace UnitTests
             Assert.AreEqual(1.0f, interpreter.Symbols["x"].number);
         }
 
+        [TestMethod]
+        public void TestInterpretIf()
+        {
+            string input = "VAR x; IF 2 > 1 THEN x := 1 .";
+
+            Interpreter interpreter = new Interpreter();
+            Assert.IsFalse(interpreter.Symbols.Exists("x"));
+
+            Interpret(interpreter, input);
+
+            Assert.IsTrue(interpreter.Symbols.Exists("x"));
+
+            Assert.AreEqual(1.0f, interpreter.Symbols["x"].number);
+        }
+
+        [TestMethod]
+        public void TestInterpretWhile()
+        {
+            string input = "VAR x; WHILE x < 10 DO x := x + 1 .";
+
+            Interpreter interpreter = new Interpreter();
+            Assert.IsFalse(interpreter.Symbols.Exists("x"));
+
+            Interpret(interpreter, input);
+
+            Assert.IsTrue(interpreter.Symbols.Exists("x"));
+
+            Assert.AreEqual(10.0f, interpreter.Symbols["x"].number);
+        }
+
+        [TestMethod]
+        public void TestInterpretExpr()
+        {
+            string input = "VAR x, y; BEGIN x := 1; y := 2; x := ( x + 1 ) * ( y + 4 ) / ( 5 - 1 ) END .";
+
+            Interpreter interpreter = new Interpreter();
+            Assert.IsFalse(interpreter.Symbols.Exists("x"));
+            Assert.IsFalse(interpreter.Symbols.Exists("y"));
+
+            Interpret(interpreter, input);
+
+            Assert.IsTrue(interpreter.Symbols.Exists("x"));
+            Assert.IsTrue(interpreter.Symbols.Exists("y"));
+
+            Assert.AreEqual(3.0f, interpreter.Symbols["x"].number);
+            Assert.AreEqual(2.0f, interpreter.Symbols["y"].number);
+        }
+
+        [TestMethod]
+        public void TestInterpretCallScope()
+        {
+            string input = "VAR x; PROCEDURE foo; VAR x; x := 100; BEGIN x := 2; CALL foo END.";
+
+            Interpreter interpreter = new Interpreter();
+            Assert.IsFalse(interpreter.Symbols.Exists("x"));
+            Assert.IsFalse(interpreter.Symbols.Exists("foo"));
+
+            Interpret(interpreter, input);
+
+            Assert.IsTrue(interpreter.Symbols.Exists("x"));
+            Assert.IsTrue(interpreter.Symbols.Exists("foo"));
+
+            Assert.AreEqual(2.0f, interpreter.Symbols["x"].number);
+        }
     }
 }
